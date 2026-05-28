@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/viagem_model.dart';
 import '../../modules/transportes/models/viagem_status.dart';
+import '../passageiros/passageiros_viagem_page.dart';
 import 'models/evento_viagem_tipo.dart';
 import 'viagem_execucao_controller.dart';
 
@@ -57,8 +58,18 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcao sera conectada na proxima etapa.'),
+      const SnackBar(content: Text('Funcao sera conectada na proxima etapa.')),
+    );
+  }
+
+  void _abrirPassageiros() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PassageirosViagemPage(
+          viagem: widget.viagem,
+          motorista: widget.motorista,
+        ),
       ),
     );
   }
@@ -129,7 +140,7 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
           _AcaoButton(
             icon: Icons.airline_seat_recline_normal,
             label: 'Ver passageiros',
-            onPressed: () => _acao(EventoViagemTipo.embarqueConfirmado),
+            onPressed: _abrirPassageiros,
           ),
           _AcaoButton(
             icon: Icons.report,
