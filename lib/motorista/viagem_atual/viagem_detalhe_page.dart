@@ -25,6 +25,7 @@ class ViagemDetalhePage extends StatefulWidget {
 
 class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
   late final ViagemExecucaoController controller;
+  String? statusLocal;
 
   @override
   void initState() {
@@ -57,8 +58,9 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
     );
 
     if (!mounted) return;
+    setState(() => statusLocal = tipo);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Funcao sera conectada na proxima etapa.')),
+      const SnackBar(content: Text('Evento registrado localmente.')),
     );
   }
 
@@ -102,7 +104,7 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
           _DetalheCard(
             icon: Icons.info_outline,
             label: 'Status',
-            value: ViagemStatus.label(viagem.status),
+            value: statusLocal ?? ViagemStatus.label(viagem.status),
           ),
           _DetalheCard(
             icon: Icons.schedule,

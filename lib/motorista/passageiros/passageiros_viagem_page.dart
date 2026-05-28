@@ -37,10 +37,19 @@ class _PassageirosViagemPageState extends State<PassageirosViagemPage> {
     super.dispose();
   }
 
-  void _registrarOperacao(PassageiroModel passageiro, String operacao) {
-    controller.registrarOperacao(passageiro.sync.id, operacao);
+  Future<void> _registrarOperacao(
+    PassageiroModel passageiro,
+    String operacao,
+  ) async {
+    await controller.registrarOperacao(
+      viagem: widget.viagem,
+      motorista: widget.motorista,
+      passageiro: passageiro,
+      operacao: operacao,
+    );
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Acao registrada localmente.')),
+      const SnackBar(content: Text('Evento registrado localmente.')),
     );
   }
 
@@ -78,14 +87,16 @@ class _PassageirosViagemPageState extends State<PassageirosViagemPage> {
     textoController.dispose();
     if (observacao == null || observacao.trim().isEmpty) return;
 
-    controller.registrarObservacao(passageiro.sync.id, observacao.trim());
-    controller.registrarOperacao(
-      passageiro.sync.id,
-      PassageiroOperacao.observacaoRegistrada,
+    await controller.registrarObservacao(
+      viagem: widget.viagem,
+      motorista: widget.motorista,
+      passageiro: passageiro,
+      observacao: observacao.trim(),
+      operacao: PassageiroOperacao.observacaoRegistrada,
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Observacao registrada localmente.')),
+      const SnackBar(content: Text('Evento registrado localmente.')),
     );
   }
 

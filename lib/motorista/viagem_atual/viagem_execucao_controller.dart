@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 import '../../auth/motorista_model.dart';
+import '../../motorista/eventos/services/evento_operacional_service.dart';
 import '../../modules/transportes/models/viagem_model.dart';
-import 'viagem_execucao_repository.dart';
 
 class ViagemExecucaoController extends ChangeNotifier {
-  final ViagemExecucaoRepository repository;
+  final EventoOperacionalService service;
 
-  ViagemExecucaoController({ViagemExecucaoRepository? repository})
-    : repository = repository ?? ViagemExecucaoRepository();
+  ViagemExecucaoController({EventoOperacionalService? service})
+    : service = service ?? EventoOperacionalService();
 
   bool processando = false;
   String? erro;
@@ -23,11 +23,7 @@ class ViagemExecucaoController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await repository.registrarPlaceholder(
-        viagem: viagem,
-        motorista: motorista,
-        tipo: tipo,
-      );
+      await service.registrar(viagem: viagem, motorista: motorista, tipo: tipo);
     } catch (error) {
       erro = error.toString();
     } finally {

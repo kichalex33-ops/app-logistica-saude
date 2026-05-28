@@ -1,13 +1,20 @@
 import 'package:flutter/foundation.dart';
 
+import '../../auth/motorista_model.dart';
+import '../../motorista/eventos/services/evento_operacional_service.dart';
 import '../../modules/transportes/models/passageiro_model.dart';
+import '../../modules/transportes/models/viagem_model.dart';
 import 'passageiros_repository.dart';
 
 class PassageirosController extends ChangeNotifier {
   final PassageirosRepository repository;
+  final EventoOperacionalService eventosService;
 
-  PassageirosController({PassageirosRepository? repository})
-    : repository = repository ?? PassageirosRepository();
+  PassageirosController({
+    PassageirosRepository? repository,
+    EventoOperacionalService? eventosService,
+  }) : repository = repository ?? PassageirosRepository(),
+       eventosService = eventosService ?? EventoOperacionalService();
 
   bool carregando = false;
   List<PassageiroModel> passageiros = const [];
@@ -31,13 +38,46 @@ class PassageirosController extends ChangeNotifier {
     }
   }
 
-  void registrarOperacao(String passageiroId, String operacao) {
+  Future<void> registrarOperacao({
+    required ViagemModel viagem,
+    required MotoristaModel motorista,
+    required PassageiroModel passageiro,
+    required String operacao,
+  }) async {
+    await eventosService.registrar(
+      viagem: viagem,
+      motorista: motorista,
+      tipo: operacao,
+      payload: {
+        'passageiro_id': passageiro.sync.id,
+        'passageiro_nome': passageiro.nome,
+      },
+    );
+    final passageiroId = passageiro.sync.id;
     operacoesLocais[passageiroId] = operacao;
     notifyListeners();
   }
 
-  void registrarObservacao(String passageiroId, String observacao) {
+  Future<void> registrarObservacao({
+    required ViagemModel viagem,
+    required MotoristaModel motorista,
+    required PassageiroModel passageiro,
+    required String observacao,
+    required String operacao,
+  }) async {
+    await eventosService.registrar(
+      viagem: viagem,
+      motorista: motorista,
+      tipo: operacao,
+      payload: {
+        'passageiro_id': passageiro.sync.id,
+        'passageiro_nome': passageiro.nome,
+        'observacao': observacao,
+      },
+    );
+    final passageiroId = passageiro.sync.id;
     observacoesLocais[passageiroId] = observacao;
+    operacoesLocais[passageiroId] = operacao;
     notifyListeners();
   }
 }

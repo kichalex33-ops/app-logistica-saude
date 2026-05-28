@@ -6,6 +6,7 @@ import '../../auth/motorista_session.dart';
 import '../../core/app_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../motorista/eventos/eventos_pendentes_page.dart';
 import '../../motorista/minhas_viagens/minhas_viagens_page.dart';
 import '../../services/theme_mode_service.dart';
 
@@ -137,6 +138,17 @@ class MotoristaHomePage extends StatelessWidget {
             onPressed: () => _mostrarIndisponivel(context, 'Sincronizacao'),
             icon: const Icon(Icons.cloud_sync),
             label: const Text('Sincronizar agora'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EventosPendentesPage()),
+              );
+            },
+            icon: const Icon(Icons.pending_actions),
+            label: const Text('Eventos pendentes'),
           ),
         ],
       ),
