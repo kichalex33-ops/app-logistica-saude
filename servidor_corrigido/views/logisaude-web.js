@@ -116,7 +116,7 @@ function renderOperacao() {
           return '<tr><td>' + v.origem + ' → ' + v.destino + '</td><td><span class="badge">' + v.status + '</span></td><td>' +
             await nomeMotorista(v.motorista_id, motoristas) + '</td><td>' +
             await nomeVeiculo(v.veiculo_id, veiculos) + '</td><td>' + (pax || '-') + '</td><td class="actions">' +
-            '<button class="btn-sm btn-success" onclick="acao(\\'' + v.id + '\\',\\'despachada\\')">Despachar</button>' +
+            '<button class="btn-sm btn-success" onclick="acao(\\'' + v.id + '\\',\\'em_andamento\\')">Despachar</button>' +
             '<button class="btn-sm btn-danger" onclick="acao(\\'' + v.id + '\\',\\'cancelada\\')">Cancelar</button>' +
             '<button class="btn-sm btn-warning" onclick="acao(\\'' + v.id + '\\',\\'concluida\\')">Concluir</button>' +
             '</td></tr>';
