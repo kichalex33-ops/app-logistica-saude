@@ -27,6 +27,15 @@ class MotoristaHomePage extends StatelessWidget {
     );
   }
 
+  MotoristaModel get _motoristaAtual {
+    return motorista ??
+        const MotoristaModel(
+          id: 'motorista-local',
+          nome: 'Motorista local',
+          municipio: 'Municipio local',
+        );
+  }
+
   Future<void> _sair(BuildContext context) async {
     await session.limpar();
     if (!context.mounted) return;
@@ -53,11 +62,12 @@ class MotoristaHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nomeMotorista = motorista?.nome.trim().isNotEmpty == true
-        ? motorista!.nome.trim()
+    final motoristaAtual = _motoristaAtual;
+    final nomeMotorista = motoristaAtual.nome.trim().isNotEmpty
+        ? motoristaAtual.nome.trim()
         : 'Motorista local';
-    final nomeMunicipio = motorista?.municipio.trim().isNotEmpty == true
-        ? motorista!.municipio.trim()
+    final nomeMunicipio = motoristaAtual.municipio.trim().isNotEmpty
+        ? motoristaAtual.municipio.trim()
         : 'Municipio local';
 
     return Scaffold(
@@ -108,7 +118,9 @@ class MotoristaHomePage extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const MinhasViagensPage()),
+                MaterialPageRoute(
+                  builder: (_) => MinhasViagensPage(motorista: motoristaAtual),
+                ),
               );
             },
             icon: const Icon(Icons.route),
