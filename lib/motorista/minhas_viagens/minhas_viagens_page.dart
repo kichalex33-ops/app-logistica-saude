@@ -4,6 +4,7 @@ import '../../auth/motorista_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/viagem_status.dart';
+import '../viagem_atual/viagem_detalhe_page.dart';
 import 'minhas_viagens_controller.dart';
 
 class MinhasViagensPage extends StatefulWidget {
@@ -28,6 +29,14 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
   String get motoristaId =>
       widget.motorista?.id ?? widget.motoristaId ?? 'motorista-local';
 
+  MotoristaModel get motoristaAtual =>
+      widget.motorista ??
+      MotoristaModel(
+        id: motoristaId,
+        nome: 'Motorista local',
+        municipio: 'Municipio local',
+      );
+
   @override
   void initState() {
     super.initState();
@@ -51,10 +60,14 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
         '${data.minute.toString().padLeft(2, '0')}';
   }
 
-  void _abrirPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Detalhe da viagem sera conectado na proxima etapa.'),
+  void _abrirDetalhe(int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ViagemDetalhePage(
+          viagem: controller.viagens[index],
+          motorista: motoristaAtual,
+        ),
       ),
     );
   }
@@ -106,7 +119,7 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
                         viagem.finalidade,
                     ].whereType<String>().join(' | '),
                   ),
-                  onTap: _abrirPlaceholder,
+                  onTap: () => _abrirDetalhe(index),
                 ),
               );
             },
