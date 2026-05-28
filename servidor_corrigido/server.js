@@ -1,5 +1,89 @@
-const express = require('express');
-const cors = require('cors');
+let express;
+let cors;
+
+try {
+  express = require('express');
+  cors = require('cors');
+} catch (error) {
+  console.warn('Express/CORS nao encontrados. Usando servidor HTTP minimo de teste.');
+  express = criarExpressMinimo;
+  express.json = () => (_req, _res, next) => next && next();
+  express.static = () => (_req, _res, next) => next && next();
+  cors = () => (_req, _res, next) => next && next();
+}
+
+function criarExpressMinimo() {
+  const http = require('http');
+  const rotas = [];
+
+  function app() {}
+
+  app.use = () => {};
+
+  app.get = (path, handler) => {
+    rotas.push({ method: 'GET', path, handler });
+  };
+
+  app.post = (path, handler) => {
+    rotas.push({ method: 'POST', path, handler });
+  };
+
+  app.listen = (port, host, callback) => {
+    const server = http.createServer((req, res) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const rota = rotas.find(
+        (item) => item.method === req.method && item.path === url.pathname,
+      );
+
+      res.status = (code) => {
+        res.statusCode = code;
+        return res;
+      };
+      res.json = (body) => {
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.end(JSON.stringify(body));
+      };
+      res.type = (type) => {
+        res.setHeader('Content-Type', `${type}; charset=utf-8`);
+        return res;
+      };
+      res.send = (body) => {
+        res.end(body);
+      };
+
+      if (!rota) {
+        res.status(404).json({ erro: 'Rota nao encontrada' });
+        return;
+      }
+
+      let raw = '';
+      req.on('data', (chunk) => {
+        raw += chunk;
+      });
+      req.on('end', () => {
+        try {
+          req.body = raw ? JSON.parse(raw) : {};
+        } catch (error) {
+          req.body = {};
+        }
+        rota.handler(req, res);
+      });
+    });
+
+    return server.listen(port, host, callback);
+  };
+
+  return app;
+}
 
 const app = express();
 const PORT = 3000;
@@ -35,7 +119,11 @@ const transportes_passageiros = [];
 const pacientes = [];
 const rastreamento_viagem = [];
 const mapas_camadas = [];
+const driver_events = [];
+const driver_locations = [];
+const driver_trips_status = [];
 let ultimo_tubito = 0;
+let driver_ultimo_recebimento = null;
 
 function proximoId(lista) {
   if (!lista.length) return 1;
@@ -79,6 +167,28 @@ function criarRotas(nome, lista) {
   });
 }
 
+function registrarDriver(lista, dados, tipoRegistro) {
+  const recebidoEm = new Date().toISOString();
+  driver_ultimo_recebimento = recebidoEm;
+
+  const registro = {
+    id: dados.id || `${tipoRegistro}-${Date.now()}-${lista.length + 1}`,
+    received_at: recebidoEm,
+    ...dados,
+  };
+
+  lista.push(registro);
+  return registro;
+}
+
+function respostaDriver(lista) {
+  return {
+    total: lista.length,
+    lastReceivedAt: driver_ultimo_recebimento,
+    items: lista,
+  };
+}
+
 function contarPorStatus(lista, status) {
   return lista.filter((item) => item.status === status).length;
 }
@@ -103,8 +213,167 @@ app.get('/api/status', (req, res) => {
     modo: 'Servidor local',
     armazenamento: 'Memoria temporaria JSON',
     futuro_banco: 'PostgreSQL/Supabase',
+    driver: {
+      eventos: driver_events.length,
+      localizacoes: driver_locations.length,
+      status_viagens: driver_trips_status.length,
+      ultimo_recebimento: driver_ultimo_recebimento,
+    },
     data_hora: new Date().toISOString(),
   });
+});
+
+app.post('/api/driver/events', (req, res) => {
+  const registro = registrarDriver(driver_events, req.body || {}, 'event');
+  res.status(201).json({ sucesso: true, dados: registro });
+});
+
+app.get('/api/driver/events', (req, res) => {
+  res.json(respostaDriver(driver_events));
+});
+
+app.post('/api/driver/locations', (req, res) => {
+  const registro = registrarDriver(driver_locations, req.body || {}, 'location');
+  res.status(201).json({ sucesso: true, dados: registro });
+});
+
+app.get('/api/driver/locations', (req, res) => {
+  res.json(respostaDriver(driver_locations));
+});
+
+app.post('/api/driver/trips/status', (req, res) => {
+  const registro = registrarDriver(
+    driver_trips_status,
+    req.body || {},
+    'trip-status',
+  );
+  res.status(201).json({ sucesso: true, dados: registro });
+});
+
+app.get('/api/driver/trips/status', (req, res) => {
+  res.json(respostaDriver(driver_trips_status));
+});
+
+app.get('/painel', (req, res) => {
+  res.type('html').send(`<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Teste Driver App</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, sans-serif;
+      color: #17202a;
+      background: #f4f6f8;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    button {
+      border: 0;
+      border-radius: 6px;
+      background: #1565c0;
+      color: white;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    section {
+      background: white;
+      border: 1px solid #dfe5ec;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 180px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .meta {
+      color: #5f6f7d;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f8fafc;
+      border: 1px solid #e1e7ef;
+      border-radius: 6px;
+      padding: 12px;
+      max-height: 420px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Painel de Teste Driver App</h1>
+      <div class="meta" id="ultimo">Último recebimento: carregando...</div>
+    </div>
+    <button type="button" onclick="carregar()">Atualizar</button>
+  </header>
+  <main>
+    <section>
+      <h2>Eventos recebidos</h2>
+      <div class="meta" id="eventos-meta"></div>
+      <pre id="eventos">[]</pre>
+    </section>
+    <section>
+      <h2>Localizações recebidas</h2>
+      <div class="meta" id="localizacoes-meta"></div>
+      <pre id="localizacoes">[]</pre>
+    </section>
+    <section>
+      <h2>Status de viagens</h2>
+      <div class="meta" id="status-meta"></div>
+      <pre id="status">[]</pre>
+    </section>
+  </main>
+  <script>
+    async function carregarBloco(url, preId, metaId) {
+      const resposta = await fetch(url);
+      const dados = await resposta.json();
+      document.getElementById(preId).textContent = JSON.stringify(dados.items, null, 2);
+      document.getElementById(metaId).textContent = 'Total: ' + dados.total;
+      return dados.lastReceivedAt;
+    }
+
+    async function carregar() {
+      const ultimos = await Promise.all([
+        carregarBloco('/api/driver/events', 'eventos', 'eventos-meta'),
+        carregarBloco('/api/driver/locations', 'localizacoes', 'localizacoes-meta'),
+        carregarBloco('/api/driver/trips/status', 'status', 'status-meta'),
+      ]);
+      const ultimo = ultimos.filter(Boolean).sort().pop();
+      document.getElementById('ultimo').textContent =
+        'Último recebimento: ' + (ultimo || 'nenhum dado recebido');
+    }
+
+    carregar();
+  </script>
+</body>
+</html>`);
 });
 
 app.get('/api/dashboard', (req, res) => {
