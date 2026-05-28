@@ -4,6 +4,7 @@ import '../../auth/motorista_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/viagem_status.dart';
+import '../sync/driver_sync_panel.dart';
 import '../viagem_atual/viagem_detalhe_page.dart';
 import 'minhas_viagens_controller.dart';
 
@@ -79,50 +80,81 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
       body: AnimatedBuilder(
         animation: controller,
         builder: (context, _) {
-          if (controller.carregando) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (controller.erro != null) {
-            return Center(
-              child: Text(
-                controller.erro!,
-                style: const TextStyle(color: AppColors.atrasado),
-              ),
-            );
-          }
-
-          if (controller.viagens.isEmpty) {
-            return const Center(
-              child: Text(
-                'Nenhuma viagem atribuida',
-                style: TextStyle(color: AppColors.textMuted),
-              ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            itemCount: controller.viagens.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final viagem = controller.viagens[index];
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.route, color: AppColors.primary),
-                  title: Text('${viagem.origem} -> ${viagem.destino}'),
-                  subtitle: Text(
-                    [
-                      ViagemStatus.label(viagem.status),
-                      _formatarData(viagem.dataHoraSaida),
-                      if (viagem.finalidade?.isNotEmpty == true)
-                        viagem.finalidade,
-                    ].whereType<String>().join(' | '),
-                  ),
-                  onTap: () => _abrirDetalhe(index),
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      controller.servidorOnline
+                          ? 'Servidor: online'
+                          : 'Servidor: offline',
+                      style: TextStyle(
+                        color: controller.servidorOnline
+                            ? Colors.green.shade800
+                            : AppColors.textMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const DriverSyncPanel(),
+                  ],
                 ),
-              );
-            },
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: controller.carregando
+                    ? const Center(child: CircularProgressIndicator())
+                    : controller.erro != null
+                    ? Center(
+                        child: Text(
+                          controller.erro!,
+                          style: const TextStyle(color: AppColors.atrasado),
+                        ),
+                      )
+                    : controller.viagens.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Nenhuma viagem atribuida',
+                          style: TextStyle(color: AppColors.textMuted),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () => controller.carregar(motoristaId),
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          itemCount: controller.viagens.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final viagem = controller.viagens[index];
+                            return Card(
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.route,
+                                  color: AppColors.primary,
+                                ),
+                                title: Text(
+                                  '${viagem.origem} -> ${viagem.destino}',
+                                ),
+                                subtitle: Text(
+                                  [
+                                    ViagemStatus.label(viagem.status),
+                                    _formatarData(viagem.dataHoraSaida),
+                                    if (viagem.finalidade?.isNotEmpty == true)
+                                      viagem.finalidade,
+                                  ].whereType<String>().join(' | '),
+                                ),
+                                onTap: () => _abrirDetalhe(index),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
           );
         },
       ),

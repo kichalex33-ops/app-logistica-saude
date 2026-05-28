@@ -25,7 +25,25 @@ Servidor padrao:
 http://localhost:3000
 ```
 
-Painel de teste:
+Portal inicial:
+
+```text
+http://localhost:3000/
+```
+
+Painel ACE (driver):
+
+```text
+http://localhost:3000/painel-ace
+```
+
+Plataforma LogiSaúde:
+
+```text
+http://localhost:3000/logisaude
+```
+
+Painel driver legado:
 
 ```text
 http://localhost:3000/painel

@@ -21,15 +21,23 @@ void main() {
     expect(find.text('Proximas viagens'), findsOneWidget);
     expect(find.text('Status de sync'), findsOneWidget);
 
-    expect(find.text('Ver minhas viagens'), findsOneWidget);
-    expect(find.text('Continuar viagem'), findsOneWidget);
+    final scrollable = find.byType(Scrollable).first;
 
     await tester.scrollUntilVisible(
-      find.text('Sincronizar agora'),
+      find.text('Testar conexao'),
       120,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: scrollable,
     );
+    expect(find.text('Testar conexao'), findsOneWidget);
     expect(find.text('Sincronizar agora'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Ver minhas viagens'),
+      120,
+      scrollable: scrollable,
+    );
+    expect(find.text('Ver minhas viagens'), findsOneWidget);
+    expect(find.text('Continuar viagem'), findsOneWidget);
 
     expect(find.text('Painel'), findsNothing);
     expect(find.text('Auditoria'), findsNothing);

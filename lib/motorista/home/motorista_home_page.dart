@@ -7,11 +7,12 @@ import '../../core/app_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../motorista/eventos/eventos_pendentes_page.dart';
-import '../../motorista/eventos/services/evento_sync_service.dart';
 import '../../motorista/minhas_viagens/minhas_viagens_page.dart';
+import '../../motorista/sync/driver_sync_panel.dart';
+import '../../motorista/sync/driver_sync_service.dart';
 import '../../services/theme_mode_service.dart';
 
-class MotoristaHomePage extends StatelessWidget {
+class MotoristaHomePage extends StatefulWidget {
   final MotoristaModel? motorista;
   final ThemeModeService? themeModeService;
   final MotoristaSession session;
@@ -23,35 +24,21 @@ class MotoristaHomePage extends StatelessWidget {
     MotoristaSession? session,
   }) : session = session ?? MotoristaSession();
 
+  @override
+  State<MotoristaHomePage> createState() => _MotoristaHomePageState();
+}
+
+class _MotoristaHomePageState extends State<MotoristaHomePage> {
+  DriverSyncStatus _statusSync = const DriverSyncStatus(online: false);
+
   void _mostrarIndisponivel(BuildContext context, String recurso) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$recurso sera conectado nas proximas etapas.')),
     );
   }
 
-  Future<void> _sincronizarAgora(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-
-    try {
-      final resultado = await EventoSyncService().enviarPendentes();
-      final erro = resultado.erro == null ? '' : '\nErro: ${resultado.erro}';
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            'Eventos enviados: ${resultado.enviados}\n'
-            'Falhas: ${resultado.falhas}$erro',
-          ),
-        ),
-      );
-    } catch (error) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Servidor offline ou indisponivel: $error')),
-      );
-    }
-  }
-
   MotoristaModel get _motoristaAtual {
-    return motorista ??
+    return widget.motorista ??
         const MotoristaModel(
           id: 'motorista-local',
           nome: 'Motorista local',
@@ -60,20 +47,20 @@ class MotoristaHomePage extends StatelessWidget {
   }
 
   Future<void> _sair(BuildContext context) async {
-    await session.limpar();
+    await widget.session.limpar();
     if (!context.mounted) return;
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => MotoristaLoginPage(
-          onEntrar: (novoMotorista) {
+          onEntrar: (loginContext, novoMotorista) {
             Navigator.pushReplacement(
-              context,
+              loginContext,
               MaterialPageRoute(
                 builder: (_) => MotoristaHomePage(
                   motorista: novoMotorista,
-                  themeModeService: themeModeService,
+                  themeModeService: widget.themeModeService,
                 ),
               ),
             );
@@ -131,10 +118,17 @@ class MotoristaHomePage extends StatelessWidget {
             value: 'Aguardando viagens atribuidas pelo painel web',
           ),
           const SizedBox(height: AppSpacing.sm),
-          const _InfoCard(
+          _InfoCard(
             icon: Icons.cloud_sync,
             title: 'Status de sync',
-            value: 'Sem pendencias conhecidas nesta tela',
+            value: _statusSync.resumoSync,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          DriverSyncPanel(
+            onStatusChanged: (status) {
+              if (!mounted) return;
+              setState(() => _statusSync = status);
+            },
           ),
           const SizedBox(height: AppSpacing.lg),
           FilledButton.icon(
@@ -154,12 +148,6 @@ class MotoristaHomePage extends StatelessWidget {
             onPressed: () => _mostrarIndisponivel(context, 'Continuar viagem'),
             icon: const Icon(Icons.play_arrow),
             label: const Text('Continuar viagem'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
-            onPressed: () => _sincronizarAgora(context),
-            icon: const Icon(Icons.cloud_sync),
-            label: const Text('Sincronizar agora'),
           ),
           const SizedBox(height: AppSpacing.sm),
           OutlinedButton.icon(

@@ -1,8 +1,6 @@
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
-import 'package:http/http.dart' as http;
-
-import '../../../services/sync_service.dart';
+import '../../../core/api/driver_api_client.dart';
 import '../repositories/evento_operacional_repository.dart';
 
 class EventoSyncResult {
@@ -19,33 +17,27 @@ class EventoSyncResult {
 
 class EventoSyncService {
   final EventoOperacionalRepository repository;
-  final http.Client client;
+  final DriverApiClient apiClient;
 
   EventoSyncService({
     EventoOperacionalRepository? repository,
-    http.Client? client,
+    DriverApiClient? apiClient,
   }) : repository = repository ?? EventoOperacionalRepository(),
-       client = client ?? http.Client();
+       apiClient = apiClient ?? DriverApiClient();
 
   Future<EventoSyncResult> enviarPendentes() async {
-    final servidorUrl = await SyncService.carregarServidorUrl();
     final eventos = await repository.listarPendentes();
+    debugPrint('[SYNC] eventos pendentes=${eventos.length}');
     var enviados = 0;
     var falhas = 0;
     String? ultimoErro;
 
     for (final evento in eventos) {
       try {
-        final response = await client
-            .post(
-              Uri.parse('$servidorUrl/api/driver/events'),
-              headers: {'Content-Type': 'application/json; charset=utf-8'},
-              body: jsonEncode(evento.toMap()),
-            )
-            .timeout(const Duration(seconds: 10));
-
-        if (response.statusCode != 200 && response.statusCode != 201) {
-          throw Exception('Falha ${response.statusCode}: ${response.body}');
+        debugPrint('[EVENTO] enviando id=${evento.id} tipo=${evento.tipo}');
+        final ok = await apiClient.enviarEvento(evento.toMap());
+        if (!ok) {
+          throw Exception('Falha ao enviar evento ${evento.id}');
         }
 
         await repository.atualizarSyncStatus(
@@ -53,6 +45,7 @@ class EventoSyncService {
           syncStatus: 'synced',
         );
         enviados++;
+        debugPrint('[EVENTO] sincronizado id=${evento.id}');
       } catch (error) {
         await repository.atualizarSyncStatus(
           eventoId: evento.id,
@@ -60,6 +53,7 @@ class EventoSyncService {
         );
         falhas++;
         ultimoErro = error.toString();
+        debugPrint('[EVENTO] falha id=${evento.id}: $error');
       }
     }
 

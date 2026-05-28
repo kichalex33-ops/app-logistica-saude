@@ -6,8 +6,11 @@ import '../core/theme/app_spacing.dart';
 import 'motorista_model.dart';
 import 'motorista_session.dart';
 
+typedef MotoristaOnEntrar =
+    void Function(BuildContext context, MotoristaModel motorista);
+
 class MotoristaLoginPage extends StatefulWidget {
-  final ValueChanged<MotoristaModel> onEntrar;
+  final MotoristaOnEntrar onEntrar;
   final MotoristaSession session;
 
   MotoristaLoginPage({
@@ -70,15 +73,24 @@ class _MotoristaLoginPageState extends State<MotoristaLoginPage> {
 
     setState(() => entrando = true);
 
-    final motorista = MotoristaModel(
-      id: nome.toLowerCase().replaceAll(RegExp(r'\s+'), '-'),
-      nome: nome,
-      municipio: municipio,
-    );
-    await widget.session.salvar(motorista);
+    try {
+      final motorista = MotoristaModel(
+        id: nome.toLowerCase().replaceAll(RegExp(r'\s+'), '-'),
+        nome: nome,
+        municipio: municipio,
+      );
+      await widget.session.salvar(motorista);
 
-    if (!mounted) return;
-    widget.onEntrar(motorista);
+      if (!mounted) return;
+      widget.onEntrar(context, motorista);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao entrar: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => entrando = false);
+    }
   }
 
   @override

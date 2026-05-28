@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../sync/driver_sync_panel.dart';
 import 'models/evento_operacional_model.dart';
 import 'services/evento_operacional_service.dart';
 
@@ -57,41 +58,56 @@ class _EventosPendentesPageState extends State<EventosPendentesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Eventos pendentes')),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : erro != null
-          ? Center(
-              child: Text(
-                erro!,
-                style: const TextStyle(color: AppColors.atrasado),
-              ),
-            )
-          : eventos.isEmpty
-          ? const Center(
-              child: Text(
-                'Nenhum evento pendente',
-                style: TextStyle(color: AppColors.textMuted),
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: eventos.length,
-              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) {
-                final evento = eventos[index];
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.pending_actions,
-                      color: AppColors.primary,
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: DriverSyncPanel(),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: carregando
+                ? const Center(child: CircularProgressIndicator())
+                : erro != null
+                ? Center(
+                    child: Text(
+                      erro!,
+                      style: const TextStyle(color: AppColors.atrasado),
                     ),
-                    title: Text(evento.tipo),
-                    subtitle: Text(_formatarData(evento.createdAt)),
-                    trailing: Chip(label: Text(evento.syncStatus)),
+                  )
+                : eventos.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Nenhum evento pendente',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: carregar,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      itemCount: eventos.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, index) {
+                        final evento = eventos[index];
+                        return Card(
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.pending_actions,
+                              color: AppColors.primary,
+                            ),
+                            title: Text(evento.tipo),
+                            subtitle: Text(_formatarData(evento.createdAt)),
+                            trailing: Chip(label: Text(evento.syncStatus)),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                );
-              },
-            ),
+          ),
+        ],
+      ),
     );
   }
 }

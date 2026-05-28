@@ -39,9 +39,9 @@ class LogiSaudeDriverApp extends StatelessWidget {
           themeMode: service.themeMode,
           home: mostrarLogin
               ? MotoristaLoginPage(
-                  onEntrar: (motorista) {
+                  onEntrar: (loginContext, motorista) {
                     Navigator.pushReplacement(
-                      context,
+                      loginContext,
                       MaterialPageRoute(
                         builder: (_) => MotoristaHomePage(
                           motorista: motorista,
