@@ -33,6 +33,7 @@ const transportes_veiculos = [];
 const transportes_viagens = [];
 const transportes_passageiros = [];
 const pacientes = [];
+const rastreamento_viagem = [];
 const mapas_camadas = [];
 let ultimo_tubito = 0;
 
@@ -235,6 +236,7 @@ criarRotas('transportes/veiculos', transportes_veiculos);
 criarRotas('transportes/viagens', transportes_viagens);
 criarRotas('transportes/passageiros', transportes_passageiros);
 criarRotas('pacientes', pacientes);
+criarRotas('rastreamento-viagem', rastreamento_viagem);
 criarRotas('mapas/camadas', mapas_camadas);
 
 app.listen(PORT, '0.0.0.0', () => {

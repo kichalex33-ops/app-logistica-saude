@@ -40,7 +40,7 @@ class DatabaseHelper {
     if (kIsWeb) {
       return await openDatabase(
         filePath,
-        version: 21,
+        version: 22,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -51,7 +51,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 21,
+      version: 22,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -114,6 +114,7 @@ class DatabaseHelper {
     await _createTerritorioOperacionalTables(db);
     await _createAuditoriaEventosTable(db);
     await _createPlataformaMunicipalTables(db);
+    await _createRastreamentoViagemTable(db);
     await _createSyncColumns(db);
   }
 
@@ -266,6 +267,10 @@ class DatabaseHelper {
 
     if (oldVersion < 21) {
       await _createPlataformaMunicipalTables(db);
+    }
+
+    if (oldVersion < 22) {
+      await _createRastreamentoViagemTable(db);
     }
   }
 
@@ -558,7 +563,7 @@ class DatabaseHelper {
         destino TEXT NOT NULL,
         data_hora_saida TEXT NOT NULL,
         data_hora_retorno TEXT,
-        status TEXT NOT NULL DEFAULT 'planejada',
+        status TEXT NOT NULL DEFAULT 'rascunho',
         finalidade TEXT,
         rota_geojson TEXT,
         observacoes TEXT,
@@ -583,7 +588,7 @@ class DatabaseHelper {
         necessidade_especial TEXT,
         embarque TEXT,
         desembarque TEXT,
-        status TEXT NOT NULL DEFAULT 'previsto',
+        status TEXT NOT NULL DEFAULT 'agendado',
         observacoes TEXT,
         device_id TEXT,
         version INTEGER NOT NULL DEFAULT 1,
@@ -655,6 +660,31 @@ class DatabaseHelper {
     );
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_sync_logs_created ON sync_logs(created_at)',
+    );
+  }
+
+  Future<void> _createRastreamentoViagemTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS rastreamento_viagem (
+        id TEXT PRIMARY KEY,
+        municipio_id TEXT NOT NULL,
+        viagem_id TEXT NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        velocidade REAL,
+        timestamp TEXT NOT NULL,
+        origem_dado TEXT NOT NULL,
+        device_id TEXT,
+        version INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        sync_status TEXT NOT NULL DEFAULT 'pending',
+        FOREIGN KEY (viagem_id) REFERENCES transportes_viagens (id)
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_rastreamento_viagem_timestamp ON rastreamento_viagem(viagem_id, timestamp)',
     );
   }
 

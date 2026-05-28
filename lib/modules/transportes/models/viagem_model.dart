@@ -1,4 +1,5 @@
 import '../../sync/models/sync_metadata.dart';
+import 'viagem_status.dart';
 
 class ViagemModel {
   final SyncMetadata sync;
@@ -21,7 +22,7 @@ class ViagemModel {
     required this.destino,
     required this.dataHoraSaida,
     this.dataHoraRetorno,
-    this.status = 'planejada',
+    this.status = ViagemStatus.rascunho,
     this.finalidade,
     this.rotaGeojson,
     this.observacoes,
@@ -50,7 +51,7 @@ class ViagemModel {
       destino: map['destino']?.toString() ?? '',
       dataHoraSaida: map['data_hora_saida']?.toString() ?? '',
       dataHoraRetorno: map['data_hora_retorno'] as String?,
-      status: map['status']?.toString() ?? 'planejada',
+      status: map['status']?.toString() ?? ViagemStatus.rascunho,
       finalidade: map['finalidade'] as String?,
       rotaGeojson: map['rota_geojson'] as String?,
       observacoes: map['observacoes'] as String?,

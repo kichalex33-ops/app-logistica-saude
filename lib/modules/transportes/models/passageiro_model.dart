@@ -21,7 +21,7 @@ class PassageiroModel {
     this.necessidadeEspecial,
     this.embarque,
     this.desembarque,
-    this.status = 'previsto',
+    this.status = 'agendado',
     this.observacoes,
   });
 
@@ -48,7 +48,7 @@ class PassageiroModel {
       necessidadeEspecial: map['necessidade_especial'] as String?,
       embarque: map['embarque'] as String?,
       desembarque: map['desembarque'] as String?,
-      status: map['status']?.toString() ?? 'previsto',
+      status: map['status']?.toString() ?? 'agendado',
       observacoes: map['observacoes'] as String?,
     );
   }

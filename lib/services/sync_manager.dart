@@ -23,6 +23,7 @@ class SyncManager {
     'transportes_viagens': '/api/transportes/viagens',
     'transportes_passageiros': '/api/transportes/passageiros',
     'pacientes': '/api/pacientes',
+    'rastreamento_viagem': '/api/rastreamento-viagem',
     'mapas_camadas': '/api/mapas/camadas',
   };
 

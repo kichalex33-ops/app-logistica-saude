@@ -9,6 +9,7 @@ import '../models/motorista_model.dart';
 import '../models/passageiro_model.dart';
 import '../models/veiculo_model.dart';
 import '../models/viagem_model.dart';
+import '../models/viagem_status.dart';
 
 class TransportesRepository {
   final DatabaseHelper databaseHelper;
@@ -57,6 +58,15 @@ class TransportesRepository {
     return result.map(VeiculoModel.fromMap).toList();
   }
 
+  Future<List<PassageiroModel>> listarPassageiros() async {
+    final db = await databaseHelper.database;
+    final result = await db.query(
+      'transportes_passageiros',
+      orderBy: 'created_at DESC',
+    );
+    return result.map(PassageiroModel.fromMap).toList();
+  }
+
   Future<ViagemModel> criarViagem({
     required String municipioId,
     required String origem,
@@ -65,6 +75,8 @@ class TransportesRepository {
     String? motoristaId,
     String? veiculoId,
     String? finalidade,
+    String status = ViagemStatus.agendada,
+    String? observacoes,
   }) async {
     final now = DateTime.now().toIso8601String();
     final viagem = ViagemModel(
@@ -75,6 +87,8 @@ class TransportesRepository {
       destino: destino,
       dataHoraSaida: dataHoraSaida.toIso8601String(),
       finalidade: finalidade,
+      status: status,
+      observacoes: observacoes,
     );
     await _insertAndQueue(
       'transportes_viagens',
@@ -132,6 +146,8 @@ class TransportesRepository {
     required String nome,
     String? pacienteId,
     String? necessidadeEspecial,
+    String? embarque,
+    String? desembarque,
   }) async {
     final now = DateTime.now().toIso8601String();
     final passageiro = PassageiroModel(
@@ -140,6 +156,8 @@ class TransportesRepository {
       pacienteId: pacienteId,
       nome: nome,
       necessidadeEspecial: necessidadeEspecial,
+      embarque: embarque,
+      desembarque: desembarque,
     );
     await _insertAndQueue(
       'transportes_passageiros',

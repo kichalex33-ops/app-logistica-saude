@@ -7,6 +7,7 @@ class MigrationV21PlataformaMunicipal {
     'transportes_viagens',
     'transportes_passageiros',
     'pacientes',
+    'rastreamento_viagem',
     'mapas_camadas',
     'sync_logs',
   ];
