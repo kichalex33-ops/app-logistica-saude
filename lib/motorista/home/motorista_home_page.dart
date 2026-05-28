@@ -7,6 +7,7 @@ import '../../core/app_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../motorista/eventos/eventos_pendentes_page.dart';
+import '../../motorista/eventos/services/evento_sync_service.dart';
 import '../../motorista/minhas_viagens/minhas_viagens_page.dart';
 import '../../services/theme_mode_service.dart';
 
@@ -26,6 +27,27 @@ class MotoristaHomePage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$recurso sera conectado nas proximas etapas.')),
     );
+  }
+
+  Future<void> _sincronizarAgora(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final resultado = await EventoSyncService().enviarPendentes();
+      final erro = resultado.erro == null ? '' : '\nErro: ${resultado.erro}';
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Eventos enviados: ${resultado.enviados}\n'
+            'Falhas: ${resultado.falhas}$erro',
+          ),
+        ),
+      );
+    } catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Servidor offline ou indisponivel: $error')),
+      );
+    }
   }
 
   MotoristaModel get _motoristaAtual {
@@ -135,7 +157,7 @@ class MotoristaHomePage extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           OutlinedButton.icon(
-            onPressed: () => _mostrarIndisponivel(context, 'Sincronizacao'),
+            onPressed: () => _sincronizarAgora(context),
             icon: const Icon(Icons.cloud_sync),
             label: const Text('Sincronizar agora'),
           ),
