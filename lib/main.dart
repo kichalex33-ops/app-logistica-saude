@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'core/app_info.dart';
 import 'core/theme/app_theme.dart';
 import 'database/database_platform.dart';
-import 'modules/logistica/screens/logistica_home_page.dart';
+import 'motorista/home/motorista_home_page.dart';
 import 'screens/login_page.dart';
 import 'services/theme_mode_service.dart';
 
@@ -11,18 +11,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configurarBancoPorPlataforma();
   final themeModeService = await ThemeModeService.carregar();
-  runApp(ControleACEApp(themeModeService: themeModeService));
+  runApp(LogiSaudeDriverApp(themeModeService: themeModeService));
 }
 
-class ControleACEApp extends StatelessWidget {
+class LogiSaudeDriverApp extends StatelessWidget {
   final ThemeModeService? themeModeService;
-  final bool carregarDashboard;
   final bool mostrarLogin;
 
-  const ControleACEApp({
+  const LogiSaudeDriverApp({
     super.key,
     this.themeModeService,
-    this.carregarDashboard = true,
     this.mostrarLogin = true,
   });
 
@@ -41,12 +39,12 @@ class ControleACEApp extends StatelessWidget {
           themeMode: service.themeMode,
           home: mostrarLogin
               ? LoginPage(
-                  onEntrar: (context, operador, municipio) {
+                  onEntrar: (context, motorista, municipio) {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => LogisticaHomePage(
-                          usuario: operador,
+                        builder: (_) => MotoristaHomePage(
+                          motorista: motorista,
                           municipio: municipio,
                           themeModeService: service,
                         ),
@@ -54,7 +52,7 @@ class ControleACEApp extends StatelessWidget {
                     );
                   },
                 )
-              : LogisticaHomePage(themeModeService: service),
+              : MotoristaHomePage(themeModeService: service),
         );
       },
     );

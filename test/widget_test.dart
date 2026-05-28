@@ -6,33 +6,35 @@ import 'package:controle_ace/core/app_info.dart';
 import 'package:controle_ace/main.dart';
 
 void main() {
-  testWidgets('mostra plataforma logistica', (WidgetTester tester) async {
+  testWidgets('mostra home do motorista sem gestao administrativa', (
+    WidgetTester tester,
+  ) async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
 
-    await tester.pumpWidget(
-      const ControleACEApp(carregarDashboard: false, mostrarLogin: false),
-    );
+    await tester.pumpWidget(const LogiSaudeDriverApp(mostrarLogin: false));
 
     expect(find.text(AppInfo.nome), findsWidgets);
-    expect(find.text('Painel'), findsOneWidget);
-    expect(find.text('Viagens'), findsWidgets);
-    expect(find.text('Pacientes'), findsWidgets);
-    expect(find.text('Rastreio'), findsOneWidget);
+    expect(find.text('Motorista logado'), findsOneWidget);
+    expect(find.text('Municipio'), findsOneWidget);
+    expect(find.text('Viagem atual'), findsOneWidget);
+    expect(find.text('Proximas viagens'), findsOneWidget);
+    expect(find.text('Status de sync'), findsOneWidget);
 
-    await tester.tap(find.text('Rastreio'));
-    await tester.pump(const Duration(milliseconds: 300));
-
-    expect(find.text('Viagem LogiSaude 001'), findsOneWidget);
-    expect(find.text('Mapa real da rota'), findsOneWidget);
+    expect(find.text('Ver minhas viagens'), findsOneWidget);
+    expect(find.text('Continuar viagem'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.text('Manifesto de passageiros'),
-      500,
-      scrollable: find.byType(Scrollable).last,
+      find.text('Sincronizar agora'),
+      120,
+      scrollable: find.byType(Scrollable).first,
     );
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Sincronizar agora'), findsOneWidget);
 
-    expect(find.text('Manifesto de passageiros'), findsOneWidget);
+    expect(find.text('Painel'), findsNothing);
+    expect(find.text('Auditoria'), findsNothing);
+    expect(find.text('Pacientes'), findsNothing);
+    expect(find.text('Veiculos'), findsNothing);
+    expect(find.text('Motoristas'), findsNothing);
   });
 }
