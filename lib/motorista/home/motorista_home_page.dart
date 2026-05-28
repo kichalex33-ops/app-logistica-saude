@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/motorista_login_page.dart';
+import '../../auth/motorista_model.dart';
+import '../../auth/motorista_session.dart';
 import '../../core/app_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../screens/login_page.dart';
+import '../../motorista/minhas_viagens/minhas_viagens_page.dart';
 import '../../services/theme_mode_service.dart';
 
 class MotoristaHomePage extends StatelessWidget {
-  final String? motorista;
-  final String? municipio;
+  final MotoristaModel? motorista;
   final ThemeModeService? themeModeService;
+  final MotoristaSession session;
 
-  const MotoristaHomePage({
+  MotoristaHomePage({
     super.key,
     this.motorista,
-    this.municipio,
     this.themeModeService,
-  });
+    MotoristaSession? session,
+  }) : session = session ?? MotoristaSession();
 
   void _mostrarIndisponivel(BuildContext context, String recurso) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -24,18 +27,20 @@ class MotoristaHomePage extends StatelessWidget {
     );
   }
 
-  void _sair(BuildContext context) {
+  Future<void> _sair(BuildContext context) async {
+    await session.limpar();
+    if (!context.mounted) return;
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => LoginPage(
-          onEntrar: (context, novoMotorista, novoMunicipio) {
+        builder: (_) => MotoristaLoginPage(
+          onEntrar: (novoMotorista) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (_) => MotoristaHomePage(
                   motorista: novoMotorista,
-                  municipio: novoMunicipio,
                   themeModeService: themeModeService,
                 ),
               ),
@@ -48,11 +53,11 @@ class MotoristaHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nomeMotorista = motorista?.trim().isNotEmpty == true
-        ? motorista!.trim()
+    final nomeMotorista = motorista?.nome.trim().isNotEmpty == true
+        ? motorista!.nome.trim()
         : 'Motorista local';
-    final nomeMunicipio = municipio?.trim().isNotEmpty == true
-        ? municipio!.trim()
+    final nomeMunicipio = motorista?.municipio.trim().isNotEmpty == true
+        ? motorista!.municipio.trim()
         : 'Municipio local';
 
     return Scaffold(
@@ -100,7 +105,12 @@ class MotoristaHomePage extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           FilledButton.icon(
-            onPressed: () => _mostrarIndisponivel(context, 'Minhas viagens'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MinhasViagensPage()),
+              );
+            },
             icon: const Icon(Icons.route),
             label: const Text('Ver minhas viagens'),
           ),

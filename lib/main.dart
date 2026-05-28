@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'auth/motorista_login_page.dart';
 import 'core/app_info.dart';
 import 'core/theme/app_theme.dart';
 import 'database/database_platform.dart';
 import 'motorista/home/motorista_home_page.dart';
-import 'screens/login_page.dart';
 import 'services/theme_mode_service.dart';
 
 Future<void> main() async {
@@ -38,14 +38,13 @@ class LogiSaudeDriverApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: service.themeMode,
           home: mostrarLogin
-              ? LoginPage(
-                  onEntrar: (context, motorista, municipio) {
+              ? MotoristaLoginPage(
+                  onEntrar: (motorista) {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (_) => MotoristaHomePage(
                           motorista: motorista,
-                          municipio: municipio,
                           themeModeService: service,
                         ),
                       ),
