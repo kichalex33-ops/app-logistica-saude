@@ -4,6 +4,11 @@ import '../../auth/motorista_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/viagem_status.dart';
+import '../../widgets/empty_state_card.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/status_badge.dart';
+import '../../widgets/sync_status_card.dart';
+import '../../widgets/sync_status_badge.dart';
 import '../sync/driver_sync_panel.dart';
 import '../viagem_atual/viagem_detalhe_page.dart';
 import 'minhas_viagens_controller.dart';
@@ -84,23 +89,13 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      controller.servidorOnline
-                          ? 'Servidor: online'
-                          : 'Servidor: offline',
-                      style: TextStyle(
-                        color: controller.servidorOnline
-                            ? Colors.green.shade800
-                            : AppColors.textMuted,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const DriverSyncPanel(),
-                  ],
+                child: SyncStatusCard(
+                  online: controller.servidorOnline,
+                  title: 'Status do servidor',
+                  description: controller.servidorOnline
+                      ? 'Viagens podem ser atualizadas pelo backend.'
+                      : 'Mostrando dados locais disponiveis offline.',
+                  child: const DriverSyncPanel(),
                 ),
               ),
               const Divider(height: 1),
@@ -115,48 +110,137 @@ class _MinhasViagensPageState extends State<MinhasViagensPage> {
                         ),
                       )
                     : controller.viagens.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Nenhuma viagem atribuida',
-                          style: TextStyle(color: AppColors.textMuted),
-                        ),
+                    ? const EmptyStateCard(
+                        icon: Icons.route,
+                        title: 'Nenhuma viagem atribuida',
+                        message:
+                            'As proximas viagens aparecem aqui quando o painel web atribuir rotas ao motorista.',
                       )
                     : RefreshIndicator(
                         onRefresh: () => controller.carregar(motoristaId),
-                        child: ListView.separated(
+                        child: ListView(
                           padding: const EdgeInsets.all(AppSpacing.md),
-                          itemCount: controller.viagens.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final viagem = controller.viagens[index];
-                            return Card(
-                              child: ListTile(
-                                leading: const Icon(
-                                  Icons.route,
-                                  color: AppColors.primary,
+                          children: [
+                            SectionHeader(
+                              title: 'Viagens atribuidas',
+                              subtitle:
+                                  '${controller.viagens.length} viagem(ns) para este motorista.',
+                            ),
+                            ...List.generate(controller.viagens.length, (
+                              index,
+                            ) {
+                              final viagem = controller.viagens[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.sm,
                                 ),
-                                title: Text(
-                                  '${viagem.origem} -> ${viagem.destino}',
+                                child: _ViagemCard(
+                                  origem: viagem.origem,
+                                  destino: viagem.destino,
+                                  horario: _formatarData(viagem.dataHoraSaida),
+                                  status: viagem.status,
+                                  finalidade: viagem.finalidade,
+                                  syncStatus: viagem.sync.syncStatus,
+                                  onTap: () => _abrirDetalhe(index),
                                 ),
-                                subtitle: Text(
-                                  [
-                                    ViagemStatus.label(viagem.status),
-                                    _formatarData(viagem.dataHoraSaida),
-                                    if (viagem.finalidade?.isNotEmpty == true)
-                                      viagem.finalidade,
-                                  ].whereType<String>().join(' | '),
-                                ),
-                                onTap: () => _abrirDetalhe(index),
-                              ),
-                            );
-                          },
+                              );
+                            }),
+                          ],
                         ),
                       ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _ViagemCard extends StatelessWidget {
+  final String origem;
+  final String destino;
+  final String horario;
+  final String status;
+  final String? finalidade;
+  final String syncStatus;
+  final VoidCallback onTap;
+
+  const _ViagemCard({
+    required this.origem,
+    required this.destino,
+    required this.horario,
+    required this.status,
+    required this.finalidade,
+    required this.syncStatus,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardRadius,
+                      ),
+                    ),
+                    child: const Icon(Icons.route, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$origem -> $destino',
+                          style: const TextStyle(
+                            color: AppColors.textStrong,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          horario,
+                          style: const TextStyle(color: AppColors.textMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  StatusBadge(
+                    label: ViagemStatus.label(status),
+                    status: status,
+                  ),
+                  SyncStatusBadge(status: syncStatus),
+                  if (finalidade?.isNotEmpty == true)
+                    Chip(label: Text(finalidade!)),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

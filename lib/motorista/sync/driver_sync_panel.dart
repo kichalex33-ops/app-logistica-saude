@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../widgets/status_badge.dart';
 import 'driver_sync_service.dart';
 
 class DriverSyncPanel extends StatefulWidget {
@@ -63,9 +65,7 @@ class _DriverSyncPanelState extends State<DriverSyncPanel> {
   }
 
   void _mostrarSnack(String texto) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(texto)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
   }
 
   @override
@@ -73,14 +73,19 @@ class _DriverSyncPanelState extends State<DriverSyncPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          _status.resumoSync,
-          style: TextStyle(
-            color: _status.online ? Colors.green.shade800 : Colors.black54,
-            fontWeight: FontWeight.w700,
-          ),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            StatusBadge(label: _status.rotuloConexao),
+            Chip(label: Text('Enviados: ${_status.enviados}')),
+            Chip(label: Text('Falhas: ${_status.falhas}')),
+            if (_status.ultimoSync?.isNotEmpty == true)
+              Chip(label: Text('Ultimo sync: ${_status.ultimoSync}')),
+          ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
         OutlinedButton.icon(
           onPressed: _processando ? null : _testarConexao,
           icon: const Icon(Icons.wifi_tethering),
@@ -98,6 +103,16 @@ class _DriverSyncPanelState extends State<DriverSyncPanel> {
               : const Icon(Icons.cloud_sync),
           label: Text(_processando ? 'Sincronizando...' : 'Sincronizar agora'),
         ),
+        if (_status.mensagem?.isNotEmpty == true) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            _status.mensagem!,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ],
     );
   }

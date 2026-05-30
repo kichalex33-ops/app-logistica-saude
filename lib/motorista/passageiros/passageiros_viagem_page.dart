@@ -5,6 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/passageiro_model.dart';
 import '../../modules/transportes/models/viagem_model.dart';
+import '../../widgets/empty_state_card.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/status_badge.dart';
 import 'models/passageiro_operacao.dart';
 import 'passageiros_controller.dart';
 
@@ -121,43 +124,51 @@ class _PassageirosViagemPageState extends State<PassageirosViagemPage> {
           }
 
           if (controller.passageiros.isEmpty) {
-            return const Center(
-              child: Text(
-                'Nenhum passageiro vinculado a esta viagem',
-                style: TextStyle(color: AppColors.textMuted),
-              ),
+            return const EmptyStateCard(
+              icon: Icons.airline_seat_recline_normal,
+              title: 'Nenhum passageiro vinculado',
+              message:
+                  'Os passageiros da viagem aparecerao aqui quando forem enviados pelo painel.',
             );
           }
 
-          return ListView.separated(
+          return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
-            itemCount: controller.passageiros.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-            itemBuilder: (context, index) {
-              final passageiro = controller.passageiros[index];
-              final operacao = controller.operacoesLocais[passageiro.sync.id];
-              final observacaoLocal =
-                  controller.observacoesLocais[passageiro.sync.id];
+            children: [
+              SectionHeader(
+                title: 'Passageiros',
+                subtitle:
+                    '${controller.passageiros.length} passageiro(s) vinculados a viagem.',
+              ),
+              ...List.generate(controller.passageiros.length, (index) {
+                final passageiro = controller.passageiros[index];
+                final operacao = controller.operacoesLocais[passageiro.sync.id];
+                final observacaoLocal =
+                    controller.observacoesLocais[passageiro.sync.id];
 
-              return _PassageiroCard(
-                passageiro: passageiro,
-                operacaoLocal: operacao,
-                observacaoLocal: observacaoLocal,
-                onEmbarque: () => _registrarOperacao(
-                  passageiro,
-                  PassageiroOperacao.embarqueConfirmado,
-                ),
-                onChegada: () => _registrarOperacao(
-                  passageiro,
-                  PassageiroOperacao.chegadaConfirmada,
-                ),
-                onAusencia: () => _registrarOperacao(
-                  passageiro,
-                  PassageiroOperacao.passageiroAusente,
-                ),
-                onObservacao: () => _registrarObservacao(passageiro),
-              );
-            },
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _PassageiroCard(
+                    passageiro: passageiro,
+                    operacaoLocal: operacao,
+                    observacaoLocal: observacaoLocal,
+                    onEmbarque: () => _registrarOperacao(
+                      passageiro,
+                      PassageiroOperacao.embarqueConfirmado,
+                    ),
+                    onChegada: () => _registrarOperacao(
+                      passageiro,
+                      PassageiroOperacao.chegadaConfirmada,
+                    ),
+                    onAusencia: () => _registrarOperacao(
+                      passageiro,
+                      PassageiroOperacao.passageiroAusente,
+                    ),
+                    onObservacao: () => _registrarObservacao(passageiro),
+                  ),
+                );
+              }),
+            ],
           );
         },
       ),
@@ -187,7 +198,6 @@ class _PassageiroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final detalhes = [
-      'Status: ${operacaoLocal ?? passageiro.status}',
       if (passageiro.embarque?.isNotEmpty == true)
         'Origem: ${passageiro.embarque}',
       if (passageiro.desembarque?.isNotEmpty == true)
@@ -207,15 +217,27 @@ class _PassageiroCard extends StatelessWidget {
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(
-                Icons.airline_seat_recline_normal,
-                color: AppColors.primary,
+              leading: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                ),
+                child: const Icon(
+                  Icons.airline_seat_recline_normal,
+                  color: AppColors.primary,
+                ),
               ),
               title: Text(
                 passageiro.nome,
                 style: const TextStyle(fontWeight: FontWeight.w900),
               ),
               subtitle: Text(detalhes.join('\n')),
+              trailing: StatusBadge(
+                label: operacaoLocal ?? passageiro.status,
+                status: operacaoLocal ?? passageiro.status,
+              ),
             ),
             Wrap(
               spacing: AppSpacing.sm,

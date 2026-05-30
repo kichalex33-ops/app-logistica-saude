@@ -8,9 +8,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../motorista/eventos/eventos_pendentes_page.dart';
 import '../../motorista/minhas_viagens/minhas_viagens_page.dart';
+import '../../motorista/simulacao/corrida_simulada_service.dart';
 import '../../motorista/sync/driver_sync_panel.dart';
 import '../../motorista/sync/driver_sync_service.dart';
 import '../../services/theme_mode_service.dart';
+import '../../widgets/dashboard_card.dart';
+import '../../widgets/quick_action_card.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/sync_status_card.dart';
 
 class MotoristaHomePage extends StatefulWidget {
   final MotoristaModel? motorista;
@@ -30,6 +35,7 @@ class MotoristaHomePage extends StatefulWidget {
 
 class _MotoristaHomePageState extends State<MotoristaHomePage> {
   DriverSyncStatus _statusSync = const DriverSyncStatus(online: false);
+  final CorridaSimuladaService _simulacaoService = CorridaSimuladaService();
 
   void _mostrarIndisponivel(BuildContext context, String recurso) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -54,6 +60,7 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
       context,
       MaterialPageRoute(
         builder: (_) => MotoristaLoginPage(
+          themeModeService: widget.themeModeService,
           onEntrar: (loginContext, novoMotorista) {
             Navigator.pushReplacement(
               loginContext,
@@ -70,6 +77,22 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
     );
   }
 
+  Future<void> _iniciarSimulacao(MotoristaModel motorista) async {
+    await _simulacaoService.iniciar(motorista);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Simulacao de corrida iniciada por 5 minutos.'),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _simulacaoService.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final motoristaAtual = _motoristaAtual;
@@ -84,6 +107,8 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
       appBar: AppBar(
         title: const Text(AppInfo.nome),
         actions: [
+          if (widget.themeModeService != null)
+            _ThemeModeAction(service: widget.themeModeService!),
           IconButton(
             tooltip: 'Sair',
             onPressed: () => _sair(context),
@@ -94,45 +119,79 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          _InfoCard(
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.primaryDark,
+              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'LogiSaude Driver App',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  '$nomeMotorista | $nomeMunicipio',
+                  style: const TextStyle(color: Color(0xFFD9F0E4)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const SectionHeader(
+            title: 'Resumo operacional',
+            subtitle: 'Status atual do motorista e das viagens atribuidas.',
+          ),
+          DashboardCard(
             icon: Icons.badge,
             title: 'Motorista logado',
             value: nomeMotorista,
+            subtitle: nomeMunicipio,
           ),
           const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            icon: Icons.location_city,
-            title: 'Municipio',
-            value: nomeMunicipio,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          const _InfoCard(
+          const DashboardCard(
             icon: Icons.route,
             title: 'Viagem atual',
-            value: 'Nenhuma viagem em andamento',
+            value: 'Nenhuma em andamento',
+            subtitle: 'Use minhas viagens para iniciar ou continuar.',
           ),
           const SizedBox(height: AppSpacing.sm),
-          const _InfoCard(
+          const DashboardCard(
             icon: Icons.event_available,
             title: 'Proximas viagens',
-            value: 'Aguardando viagens atribuidas pelo painel web',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _InfoCard(
-            icon: Icons.cloud_sync,
-            title: 'Status de sync',
-            value: _statusSync.resumoSync,
+            value: 'Aguardando atribuicoes',
+            subtitle: 'Viagens sao criadas pelo painel web.',
           ),
           const SizedBox(height: AppSpacing.lg),
-          DriverSyncPanel(
-            onStatusChanged: (status) {
-              if (!mounted) return;
-              setState(() => _statusSync = status);
-            },
+          SyncStatusCard(
+            online: _statusSync.online,
+            title: 'Sincronizacao',
+            description: _statusSync.resumoSync,
+            lastSync: _statusSync.ultimoSync,
+            child: DriverSyncPanel(
+              onStatusChanged: (status) {
+                if (!mounted) return;
+                setState(() => _statusSync = status);
+              },
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          FilledButton.icon(
-            onPressed: () {
+          const SectionHeader(
+            title: 'Acoes rapidas',
+            subtitle: 'Atalhos reais do fluxo operacional do motorista.',
+          ),
+          QuickActionCard(
+            icon: Icons.route,
+            title: 'Ver minhas viagens',
+            subtitle: 'Origem, destino, horario e detalhe da execucao.',
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -140,25 +199,92 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
                 ),
               );
             },
-            icon: const Icon(Icons.route),
-            label: const Text('Ver minhas viagens'),
           ),
           const SizedBox(height: AppSpacing.sm),
-          FilledButton.icon(
-            onPressed: () => _mostrarIndisponivel(context, 'Continuar viagem'),
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Continuar viagem'),
+          QuickActionCard(
+            icon: Icons.play_arrow,
+            title: 'Continuar viagem',
+            subtitle: 'Retomar a execucao operacional em andamento.',
+            onTap: () => _mostrarIndisponivel(context, 'Continuar viagem'),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
-            onPressed: () {
+          QuickActionCard(
+            icon: Icons.pending_actions,
+            title: 'Eventos pendentes',
+            subtitle: 'Conferir registros offline aguardando envio.',
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const EventosPendentesPage()),
               );
             },
-            icon: const Icon(Icons.pending_actions),
-            label: const Text('Eventos pendentes'),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AnimatedBuilder(
+            animation: _simulacaoService,
+            builder: (context, _) {
+              final status = _simulacaoService.status;
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.navigation,
+                            color: status.rodando
+                                ? Colors.green.shade800
+                                : AppColors.primary,
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Simulacao de corrida',
+                                  style: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(
+                                  status.resumo,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.icon(
+                        onPressed: status.rodando
+                            ? null
+                            : () => _iniciarSimulacao(motoristaAtual),
+                        icon: const Icon(Icons.play_circle),
+                        label: const Text('Simular corrida 5 min'),
+                      ),
+                      if (status.rodando) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        OutlinedButton.icon(
+                          onPressed: _simulacaoService.cancelar,
+                          icon: const Icon(Icons.stop_circle),
+                          label: const Text('Cancelar simulacao'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -166,52 +292,50 @@ class _MotoristaHomePageState extends State<MotoristaHomePage> {
   }
 }
 
-class _InfoCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
+class _ThemeModeAction extends StatelessWidget {
+  final ThemeModeService service;
 
-  const _InfoCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
+  const _ThemeModeAction({required this.service});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+    return AnimatedBuilder(
+      animation: service,
+      builder: (context, _) {
+        return PopupMenuButton<ThemeMode>(
+          tooltip: 'Tema',
+          icon: Icon(
+            service.themeMode == ThemeMode.dark
+                ? Icons.dark_mode
+                : Icons.light_mode,
+          ),
+          initialValue: service.themeMode,
+          onSelected: service.alterar,
+          itemBuilder: (context) => const [
+            PopupMenuItem(
+              value: ThemeMode.light,
+              child: ListTile(
+                leading: Icon(Icons.light_mode),
+                title: Text('Modo claro'),
+              ),
+            ),
+            PopupMenuItem(
+              value: ThemeMode.dark,
+              child: ListTile(
+                leading: Icon(Icons.dark_mode),
+                title: Text('Modo escuro'),
+              ),
+            ),
+            PopupMenuItem(
+              value: ThemeMode.system,
+              child: ListTile(
+                leading: Icon(Icons.settings_suggest),
+                title: Text('Sistema'),
               ),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

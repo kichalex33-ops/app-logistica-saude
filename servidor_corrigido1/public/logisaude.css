@@ -293,6 +293,99 @@ textarea {
   );
 }
 
+.panel-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eceff1;
+  color: #455a64;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.live-pill.online {
+  background: #dff4e5;
+  color: #1b5e20;
+}
+
+.route-map {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--ls-border);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(13, 110, 110, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(13, 110, 110, 0.08) 1px, transparent 1px),
+    #f7fbfb;
+  background-size: 44px 44px;
+}
+
+.route-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.route-line {
+  fill: none;
+  stroke: var(--ls-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.2;
+}
+
+.route-dot {
+  fill: #ffffff;
+  stroke: var(--ls-primary-dark);
+  stroke-width: 0.45;
+}
+
+.route-dot-current {
+  fill: var(--ls-accent);
+  stroke: #7c3f00;
+  stroke-width: 0.7;
+}
+
+.route-current-card {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: grid;
+  gap: 4px;
+  max-width: min(320px, calc(100% - 32px));
+  border: 1px solid var(--ls-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 10px 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.route-current-card span {
+  color: var(--ls-muted);
+  font-size: 12px;
+}
+
+.route-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  color: var(--ls-muted);
+  font-weight: 700;
+}
+
 pre.debug-json {
   background: #0f1720;
   color: #d9f7ff;

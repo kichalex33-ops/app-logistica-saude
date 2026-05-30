@@ -28,4 +28,16 @@ class RastreamentoPontoModel {
     'timestamp': timestamp,
     'origem_dado': origemDado,
   };
+
+  factory RastreamentoPontoModel.fromMap(Map<String, dynamic> map) {
+    return RastreamentoPontoModel(
+      sync: SyncMetadata.fromMap(map),
+      viagemId: map['viagem_id']?.toString() ?? '',
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 0,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 0,
+      velocidade: (map['velocidade'] as num?)?.toDouble(),
+      timestamp: map['timestamp']?.toString() ?? '',
+      origemDado: map['origem_dado']?.toString() ?? 'local',
+    );
+  }
 }

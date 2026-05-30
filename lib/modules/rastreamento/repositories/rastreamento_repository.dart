@@ -59,4 +59,14 @@ class RastreamentoRepository {
     );
     return ponto;
   }
+
+  Future<List<RastreamentoPontoModel>> listarRecentes({int limit = 30}) async {
+    final db = await databaseHelper.database;
+    final result = await db.query(
+      'rastreamento_viagem',
+      orderBy: 'timestamp DESC, created_at DESC',
+      limit: limit,
+    );
+    return result.map(RastreamentoPontoModel.fromMap).toList();
+  }
 }

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'auth/motorista_login_page.dart';
 import 'core/app_info.dart';
 import 'core/theme/app_theme.dart';
 import 'database/database_platform.dart';
 import 'motorista/home/motorista_home_page.dart';
+import 'modules/logisaude_web/screens/logisaude_admin_dashboard_page.dart';
 import 'services/theme_mode_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await configurarBancoPorPlataforma();
+  if (!kIsWeb) {
+    await configurarBancoPorPlataforma();
+  }
   final themeModeService = await ThemeModeService.carregar();
   runApp(LogiSaudeDriverApp(themeModeService: themeModeService));
 }
@@ -37,8 +41,11 @@ class LogiSaudeDriverApp extends StatelessWidget {
           theme: AppTheme.theme,
           darkTheme: AppTheme.darkTheme,
           themeMode: service.themeMode,
-          home: mostrarLogin
+          home: kIsWeb
+              ? const LogisaudeAdminDashboardPage()
+              : mostrarLogin
               ? MotoristaLoginPage(
+                  themeModeService: service,
                   onEntrar: (loginContext, motorista) {
                     Navigator.pushReplacement(
                       loginContext,

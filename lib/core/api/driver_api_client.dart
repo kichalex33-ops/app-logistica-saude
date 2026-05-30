@@ -26,17 +26,61 @@ class DriverApiClient {
 
   Future<List<Map<String, dynamic>>> buscarViagensMockadas() async {
     debugPrint('[API] GET ${ApiConfig.driverTrips}');
+    return _getLista(ApiConfig.driverTrips);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLogisaudeViagens() async {
+    debugPrint('[API] GET ${ApiConfig.logisaudeViagens}');
+    return _getLista(ApiConfig.logisaudeViagens);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLogisaudeMotoristas() async {
+    debugPrint('[API] GET ${ApiConfig.logisaudeMotoristas}');
+    return _getLista(ApiConfig.logisaudeMotoristas);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLogisaudeVeiculos() async {
+    debugPrint('[API] GET ${ApiConfig.logisaudeVeiculos}');
+    return _getLista(ApiConfig.logisaudeVeiculos);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLogisaudePacientes() async {
+    debugPrint('[API] GET ${ApiConfig.logisaudePacientes}');
+    return _getLista(ApiConfig.logisaudePacientes);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLogisaudePassageiros() async {
+    debugPrint('[API] GET ${ApiConfig.logisaudePassageiros}');
+    return _getLista(ApiConfig.logisaudePassageiros);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarEventosRecebidos() async {
+    debugPrint('[API] GET ${ApiConfig.driverEvents}');
+    return _getLista(ApiConfig.driverEvents);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarLocalizacoesRecebidas() async {
+    debugPrint('[API] GET ${ApiConfig.driverLocations}');
+    return _getLista(ApiConfig.driverLocations);
+  }
+
+  Future<List<Map<String, dynamic>>> buscarStatusViagensRecebidos() async {
+    debugPrint('[API] GET ${ApiConfig.driverTripStatus}');
+    return _getLista(ApiConfig.driverTripStatus);
+  }
+
+  Future<List<Map<String, dynamic>>> _getLista(String path) async {
     try {
       final response = await client
-          .get(ApiConfig.uri(ApiConfig.driverTrips))
+          .get(ApiConfig.uri(path))
           .timeout(ApiConfig.httpTimeout);
-      debugPrint('[API] trips ${response.statusCode}');
+      debugPrint('[API] GET $path -> ${response.statusCode}');
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return const [];
       }
       return _extrairLista(response.body);
     } catch (error) {
-      debugPrint('[API] buscarViagensMockadas falhou: $error');
+      debugPrint('[API] GET $path falhou: $error');
       return const [];
     }
   }

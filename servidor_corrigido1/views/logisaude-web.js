@@ -295,6 +295,108 @@ function renderDebug() {
   );
 }
 
+function renderRastreamentoVivo() {
+  return layout(
+    'rastreamento',
+    'Rastreamento',
+    `<section class="panel live-route-panel">
+      <div class="panel-title-row">
+        <div>
+          <h2>Rota ao vivo do app motorista</h2>
+          <div class="ls-meta" id="rota-meta">Aguardando pontos do app...</div>
+        </div>
+        <span class="live-pill" id="rota-status">offline</span>
+      </div>
+      <div class="route-map" id="route-map">
+        <div class="route-empty">Nenhuma localizacao recebida ainda.</div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Ultimos pontos recebidos</h2>
+      <div id="lista">Carregando...</div>
+    </section>`,
+    `<script>
+      function valor(item, ...chaves) {
+        for (const chave of chaves) {
+          if (item[chave] !== undefined && item[chave] !== null && item[chave] !== '') return item[chave];
+        }
+        return '-';
+      }
+
+      function numero(item, ...chaves) {
+        const bruto = valor(item, ...chaves);
+        const n = Number(bruto);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function desenharRota(items) {
+        const map = document.getElementById('route-map');
+        const pontos = items
+          .map((item) => ({
+            lat: numero(item, 'latitude', 'lat'),
+            lng: numero(item, 'longitude', 'lng', 'lon'),
+            viagem: valor(item, 'viagemId', 'viagem_id'),
+            motorista: valor(item, 'motorista_nome', 'motoristaId', 'motorista_id'),
+            recebido: item.received_at || item.created_at || '',
+          }))
+          .filter((p) => p.lat !== null && p.lng !== null)
+          .slice(-30);
+
+        if (!pontos.length) {
+          map.innerHTML = '<div class="route-empty">Nenhuma localizacao recebida ainda.</div>';
+          document.getElementById('rota-status').textContent = 'offline';
+          document.getElementById('rota-status').className = 'live-pill';
+          document.getElementById('rota-meta').textContent = 'Aguardando pontos do app motorista.';
+          return;
+        }
+
+        const minLat = Math.min(...pontos.map((p) => p.lat));
+        const maxLat = Math.max(...pontos.map((p) => p.lat));
+        const minLng = Math.min(...pontos.map((p) => p.lng));
+        const maxLng = Math.max(...pontos.map((p) => p.lng));
+        const latSpan = Math.max(maxLat - minLat, 0.0001);
+        const lngSpan = Math.max(maxLng - minLng, 0.0001);
+        const coords = pontos.map((p) => {
+          const x = 8 + ((p.lng - minLng) / lngSpan) * 84;
+          const y = 92 - ((p.lat - minLat) / latSpan) * 84;
+          return { ...p, x, y };
+        });
+        const path = coords.map((p) => p.x + ',' + p.y).join(' ');
+        const ultimo = coords[coords.length - 1];
+
+        map.innerHTML =
+          '<svg class="route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Rota recebida do app">' +
+            '<polyline class="route-line" points="' + path + '" />' +
+            coords.map((p, index) =>
+              '<circle class="' + (index === coords.length - 1 ? 'route-dot route-dot-current' : 'route-dot') + '" cx="' + p.x + '" cy="' + p.y + '" r="' + (index === coords.length - 1 ? 2.4 : 1.25) + '" />'
+            ).join('') +
+          '</svg>' +
+          '<div class="route-current-card"><strong>Ultimo ponto</strong><span>' +
+          ultimo.motorista + ' / ' + ultimo.viagem + '</span><span>' +
+          ultimo.lat.toFixed(6) + ', ' + ultimo.lng.toFixed(6) + '</span></div>';
+
+        document.getElementById('rota-status').textContent = 'ao vivo';
+        document.getElementById('rota-status').className = 'live-pill online';
+        document.getElementById('rota-meta').textContent =
+          pontos.length + ' pontos na trilha. Ultima atualizacao: ' +
+          (ultimo.recebido ? new Date(ultimo.recebido).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR'));
+      }
+
+      async function carregar() {
+        const dados = await fetch('/api/driver/locations').then(r => r.json());
+        const items = dados.items || dados.data || [];
+        desenharRota(items);
+        const recentes = items.slice(-20).reverse();
+        document.getElementById('lista').innerHTML = recentes.length ? '<table><thead><tr><th>Motorista</th><th>Viagem</th><th>Lat</th><th>Lng</th><th>Vel.</th><th>Recebido</th></tr></thead><tbody>' +
+          recentes.map(i => '<tr><td>' + valor(i, 'motorista_nome', 'motoristaId', 'motorista_id') + '</td><td>' + valor(i, 'viagemId', 'viagem_id') + '</td><td>' + valor(i, 'latitude', 'lat') + '</td><td>' + valor(i, 'longitude', 'lng', 'lon') + '</td><td>' + valor(i, 'velocidade') + '</td><td>' + (i.received_at || i.created_at || '-') + '</td></tr>').join('') +
+          '</tbody></table>' : '<p>Nenhuma localizacao recebida ainda.</p>';
+      }
+      carregar();
+      setInterval(carregar, 3000);
+    </script>`,
+  );
+}
+
 module.exports = {
   renderDashboard,
   renderOperacao,
@@ -302,7 +404,7 @@ module.exports = {
   renderMotoristas,
   renderVeiculos,
   renderPacientes,
-  renderRastreamento,
+  renderRastreamento: renderRastreamentoVivo,
   renderSync,
   renderDebug,
 };

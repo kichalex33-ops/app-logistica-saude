@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../widgets/empty_state_card.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/status_badge.dart';
+import '../../widgets/sync_status_card.dart';
 import '../sync/driver_sync_panel.dart';
 import 'models/evento_operacional_model.dart';
 import 'services/evento_operacional_service.dart';
@@ -60,9 +64,16 @@ class _EventosPendentesPageState extends State<EventosPendentesPage> {
       appBar: AppBar(title: const Text('Eventos pendentes')),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: DriverSyncPanel(),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: SyncStatusCard(
+              online: true,
+              title: 'Fila local de eventos',
+              description:
+                  'Eventos operacionais ficam salvos no aparelho ate a sincronizacao.',
+              pending: eventos.length,
+              child: const DriverSyncPanel(),
+            ),
           ),
           const Divider(height: 1),
           Expanded(
@@ -76,33 +87,45 @@ class _EventosPendentesPageState extends State<EventosPendentesPage> {
                     ),
                   )
                 : eventos.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Nenhum evento pendente',
-                      style: TextStyle(color: AppColors.textMuted),
-                    ),
+                ? const EmptyStateCard(
+                    icon: Icons.cloud_done,
+                    title: 'Nenhum evento pendente',
+                    message: 'A fila local esta livre para sincronizacao.',
                   )
                 : RefreshIndicator(
                     onRefresh: carregar,
-                    child: ListView.separated(
+                    child: ListView(
                       padding: const EdgeInsets.all(AppSpacing.md),
-                      itemCount: eventos.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (context, index) {
-                        final evento = eventos[index];
-                        return Card(
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.pending_actions,
-                              color: AppColors.primary,
+                      children: [
+                        SectionHeader(
+                          title: 'Eventos aguardando envio',
+                          subtitle: '${eventos.length} evento(s) na fila.',
+                        ),
+                        ...List.generate(eventos.length, (index) {
+                          final evento = eventos[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
                             ),
-                            title: Text(evento.tipo),
-                            subtitle: Text(_formatarData(evento.createdAt)),
-                            trailing: Chip(label: Text(evento.syncStatus)),
-                          ),
-                        );
-                      },
+                            child: Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.pending_actions),
+                                title: Text(evento.tipo),
+                                subtitle: Text(
+                                  [
+                                    _formatarData(evento.createdAt),
+                                    'Viagem: ${evento.viagemId}',
+                                  ].join('\n'),
+                                ),
+                                trailing: StatusBadge(
+                                  label: evento.syncStatus,
+                                  status: evento.syncStatus,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
           ),

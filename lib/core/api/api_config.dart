@@ -9,6 +9,11 @@ class ApiConfig {
   static const String driverEvents = '/api/driver/events';
   static const String driverLocations = '/api/driver/locations';
   static const String driverTripStatus = '/api/driver/trips/status';
+  static const String logisaudeViagens = '/api/logisaude/viagens';
+  static const String logisaudeMotoristas = '/api/logisaude/motoristas';
+  static const String logisaudeVeiculos = '/api/logisaude/veiculos';
+  static const String logisaudePacientes = '/api/logisaude/pacientes';
+  static const String logisaudePassageiros = '/api/logisaude/passageiros';
 
   static Uri uri(String path) => Uri.parse('$baseUrl$path');
 }

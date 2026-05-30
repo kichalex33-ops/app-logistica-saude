@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 Future<void> configurarBancoPorPlataforma() async {
   if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
+    // O painel Web LogiSaúde não deve depender de SQLite/worker no navegador.
+    // Android/iOS continuam usando sqflite nativo e desktop usa FFI abaixo.
     return;
   }
 

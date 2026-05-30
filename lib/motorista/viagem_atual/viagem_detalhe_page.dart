@@ -5,6 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../modules/transportes/models/viagem_model.dart';
 import '../../modules/transportes/models/viagem_status.dart';
+import '../../widgets/route_summary_panel.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/status_badge.dart';
 import '../passageiros/passageiros_viagem_page.dart';
 import 'models/evento_viagem_tipo.dart';
 import 'viagem_execucao_controller.dart';
@@ -85,31 +88,25 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          _DetalheCard(
-            icon: Icons.trip_origin,
-            label: 'Origem',
-            value: viagem.origem,
+          RouteSummaryPanel(
+            origem: viagem.origem,
+            destino: viagem.destino,
+            horario: _formatarData(viagem.dataHoraSaida),
+            finalidade: viagem.finalidade,
           ),
-          _DetalheCard(
-            icon: Icons.flag,
-            label: 'Destino',
-            value: viagem.destino,
+          const SizedBox(height: AppSpacing.md),
+          const SectionHeader(
+            title: 'Dados operacionais',
+            subtitle: 'Informacoes da viagem atribuida pelo painel.',
           ),
-          if (viagem.finalidade?.isNotEmpty == true)
-            _DetalheCard(
-              icon: Icons.medical_services,
-              label: 'Finalidade',
-              value: viagem.finalidade!,
-            ),
           _DetalheCard(
             icon: Icons.info_outline,
             label: 'Status',
             value: statusLocal ?? ViagemStatus.label(viagem.status),
-          ),
-          _DetalheCard(
-            icon: Icons.schedule,
-            label: 'Data/hora de saida',
-            value: _formatarData(viagem.dataHoraSaida),
+            trailing: StatusBadge(
+              label: statusLocal ?? ViagemStatus.label(viagem.status),
+              status: statusLocal ?? viagem.status,
+            ),
           ),
           _DetalheCard(
             icon: Icons.badge,
@@ -129,6 +126,10 @@ class _ViagemDetalhePageState extends State<ViagemDetalhePage> {
               value: viagem.observacoes!,
             ),
           const SizedBox(height: AppSpacing.md),
+          const SectionHeader(
+            title: 'Execucao da viagem',
+            subtitle: 'Acoes registram eventos locais offline-first.',
+          ),
           _AcaoButton(
             icon: Icons.check_circle,
             label: 'Aceitar viagem',
@@ -164,11 +165,13 @@ class _DetalheCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Widget? trailing;
 
   const _DetalheCard({
     required this.icon,
     required this.label,
     required this.value,
+    this.trailing,
   });
 
   @override
@@ -181,6 +184,7 @@ class _DetalheCard extends StatelessWidget {
           value,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
+        trailing: trailing,
       ),
     );
   }

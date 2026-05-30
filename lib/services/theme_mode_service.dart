@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../database/database_helper.dart';
@@ -23,6 +24,10 @@ class ThemeModeService extends ChangeNotifier {
   }
 
   static Future<ThemeModeService> carregar() async {
+    if (kIsWeb) {
+      return ThemeModeService(ThemeMode.system);
+    }
+
     final valor = await DatabaseHelper.instance.carregarValorConfiguracao(
       _configKey,
     );
@@ -36,6 +41,8 @@ class ThemeModeService extends ChangeNotifier {
     _themeMode = mode;
     notifyListeners();
 
+    if (kIsWeb) return;
+
     await DatabaseHelper.instance.salvarValorConfiguracao(
       _configKey,
       _toString(mode),
@@ -48,8 +55,10 @@ class ThemeModeService extends ChangeNotifier {
         return ThemeMode.light;
       case 'dark':
         return ThemeMode.dark;
-      default:
+      case 'system':
         return ThemeMode.system;
+      default:
+        return ThemeMode.light;
     }
   }
 
