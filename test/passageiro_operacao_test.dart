@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:controle_ace/motorista/passageiros/models/passageiro_operacao.dart';
+import 'package:logisaude_driver/motorista/passageiros/models/passageiro_operacao.dart';
 
 void main() {
   test('expoe tipos de operacao de passageiro', () {

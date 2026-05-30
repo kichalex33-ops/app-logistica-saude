@@ -160,7 +160,9 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
               _LinhaAuditoria(icon: Icons.description, texto: item.descricao),
               _LinhaAuditoria(
                 icon: Icons.person,
-                texto: item.agente.isEmpty ? 'ACE nao informado' : item.agente,
+                texto: item.motorista.isEmpty
+                    ? 'Motorista nao informado'
+                    : item.motorista,
               ),
               _LinhaAuditoria(
                 icon: Icons.location_city,

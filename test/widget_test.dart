@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'package:controle_ace/core/app_info.dart';
-import 'package:controle_ace/main.dart';
+import 'package:logisaude_driver/core/app_info.dart';
+import 'package:logisaude_driver/main.dart';
 
 void main() {
   testWidgets('mostra home do motorista sem gestao administrativa', (
@@ -16,10 +16,10 @@ void main() {
 
     expect(find.text(AppInfo.nome), findsWidgets);
     expect(find.text('Motorista logado'), findsOneWidget);
-    expect(find.text('Municipio'), findsOneWidget);
+    expect(find.text('Municipio local'), findsWidgets);
     expect(find.text('Viagem atual'), findsOneWidget);
     expect(find.text('Proximas viagens'), findsOneWidget);
-    expect(find.text('Status de sync'), findsOneWidget);
+    expect(find.text('Sincronizacao'), findsOneWidget);
 
     final scrollable = find.byType(Scrollable).first;
 

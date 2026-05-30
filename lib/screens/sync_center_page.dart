@@ -80,9 +80,9 @@ class _SyncCenterPageState extends State<SyncCenterPage> {
 
     if (!mounted) return;
     setState(() => sincronizando = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sincronizacao processada.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sincronizacao processada.')));
   }
 
   Future<void> retryFailed() async {
@@ -251,14 +251,18 @@ class _SyncCenterPageState extends State<SyncCenterPage> {
             ),
             onPressed: sincronizando ? null : sincronizarAgora,
             icon: Icon(sincronizando ? Icons.sync : Icons.cloud_sync),
-            label: Text(sincronizando ? 'Sincronizando...' : 'Sincronizar agora'),
+            label: Text(
+              sincronizando ? 'Sincronizando...' : 'Sincronizar agora',
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 54),
             ),
-            onPressed: valor('failed') == 0 || sincronizando ? null : retryFailed,
+            onPressed: valor('failed') == 0 || sincronizando
+                ? null
+                : retryFailed,
             icon: const Icon(Icons.restart_alt),
             label: const Text('Retry failed'),
           ),

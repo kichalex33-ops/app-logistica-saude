@@ -1,43 +1,26 @@
-# Servidor local — ACE Territorial + LogiSaúde
+# Servidor local LogiSaude
 
-Servidor Node.js unificado para testes do app ACE, plataforma web LogiSaúde e Driver App.
+Servidor Node.js local para testes da plataforma LogiSaude e do Driver App.
 
-## Instalação
-
-```bash
-npm install --prefix servidor_corrigido
-```
-
-## Executar
+## Como rodar
 
 ```bash
-node servidor_corrigido/server.js
+npm install
+npm start
 ```
 
-Porta padrão: **3000** (`PORT` e `HOST` via variáveis de ambiente).
+Servidor padrao: `http://10.0.0.3:3000`
 
-## URLs principais
+## Rotas principais
 
-| URL | Descrição |
-|-----|-----------|
-| `/` | Portal (ACE + LogiSaúde) |
-| `/painel-ace` | Redireciona para painel driver ACE |
-| `/painel` | Painel de sync do driver (legado) |
-| `/logisaude` | Dashboard LogiSaúde |
-| `/api/status` | Status ACE (inalterado) |
-| `/api/logisaude/dashboard` | Métricas LogiSaúde |
-| `/api/driver/events` | Eventos do app motorista |
+| Rota | Uso |
+| --- | --- |
+| `/` | Portal LogiSaude |
+| `/logisaude` | Painel web local |
+| `/api/status` | Status do servidor |
+| `/api/driver/events` | Eventos enviados pelo app motorista |
+| `/api/driver/locations` | Localizacoes enviadas pelo app motorista |
+| `/api/driver/trips/status` | Status de viagens enviado pelo app motorista |
+| `/api/logisaude/dashboard` | Resumo operacional do painel |
 
-## Estrutura
-
-```
-servidor_corrigido/
-├── server.js
-├── data/logisaude-data.json
-├── lib/
-├── routes/
-├── views/
-└── public/logisaude.css
-```
-
-Dados LogiSaúde persistem em `data/logisaude-data.json`. Driver e ACE usam memória volátil.
+Dados da plataforma sao persistidos em `data/logisaude-data.json`. Eventos do Driver App usam memoria durante a execucao do servidor.

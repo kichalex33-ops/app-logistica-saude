@@ -9,9 +9,9 @@ class AppColors {
   static const textStrong = Color(0xFF123047);
   static const textMuted = Color(0xFF6B7785);
 
-  static const pe = Color(0xFF0F7A4A);
-  static const bti = Color(0xFF247C8A);
-  static const ovitrampas = Color(0xFF7A5FB7);
+  static const viagem = Color(0xFF0F7A4A);
+  static const rastreamento = Color(0xFF247C8A);
+  static const passageiro = Color(0xFF7A5FB7);
   static const relatorios = Color(0xFFB06C00);
 
   static const emDia = Color(0xFF17834F);

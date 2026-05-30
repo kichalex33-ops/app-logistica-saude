@@ -14,7 +14,7 @@ class GPSService {
 
     if (permissao == LocationPermission.denied) {
       throw Exception(
-        'Permita o acesso à localização para registrar a visita.',
+        'Permita o acesso a localizacao para registrar a operacao.',
       );
     }
 

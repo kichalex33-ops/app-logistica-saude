@@ -1,8 +1,7 @@
 /**
- * Servidor local unificado:
- * - ACE Territorial (APIs e painel existentes)
- * - LogiSaúde (plataforma web + APIs de teste)
- * - Driver App (eventos, localizações, viagens)
+ * Servidor local LogiSaude:
+ * - Plataforma web de testes
+ * - Driver App (eventos, localizacoes, viagens)
  */
 
 const path = require('path');
@@ -21,7 +20,6 @@ try {
 
 const driverStore = require('./lib/driver-store');
 const { renderPortal } = require('./views/portal');
-const { registerAceRoutes } = require('./routes/ace.routes');
 const { registerDriverRoutes } = require('./routes/driver.routes');
 const { registerLogisaudeRoutes } = require('./routes/logisaude.routes');
 
@@ -33,23 +31,17 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Portal inicial — ACE + LogiSaúde
 app.get('/', (req, res) => {
   res.type('html').send(renderPortal());
 });
 
-// =============================================================================
-// Módulos de rotas
-// =============================================================================
-registerAceRoutes(app, driverStore);
 registerDriverRoutes(app, driverStore, require('./lib/logisaude-store'));
 registerLogisaudeRoutes(app, driverStore);
 
 app.listen(PORT, HOST, () => {
   console.log(`Servidor rodando em http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
   console.log('  Portal:        /');
-  console.log('  ACE painel:    /painel-ace  (→ /painel)');
-  console.log('  LogiSaúde:     /logisaude');
+  console.log('  LogiSaude:     /logisaude');
   console.log('  API status:    /api/status');
-  console.log('  API LogiSaúde: /api/logisaude/dashboard');
+  console.log('  API LogiSaude: /api/logisaude/dashboard');
 });

@@ -4,7 +4,7 @@ class ExclusaoLogModel {
   final int entidadeId;
   final String descricao;
   final String justificativa;
-  final String agente;
+  final String motorista;
   final String municipio;
   final String dataHora;
   final String origem;
@@ -18,10 +18,10 @@ class ExclusaoLogModel {
     required this.entidadeId,
     required this.descricao,
     required this.justificativa,
-    required this.agente,
+    required this.motorista,
     required this.municipio,
     required this.dataHora,
-    this.origem = 'app_flutter',
+    this.origem = 'logisaude_driver',
     this.sincronizado = 0,
     this.sincronizadoEm,
     this.erroSincronizacao,
@@ -34,7 +34,7 @@ class ExclusaoLogModel {
       'entidade_id': entidadeId,
       'descricao': descricao,
       'justificativa': justificativa,
-      'agente': agente,
+      'motorista': motorista,
       'municipio': municipio,
       'data_hora': dataHora,
       'origem': origem,
@@ -51,10 +51,10 @@ class ExclusaoLogModel {
       entidadeId: map['entidade_id'] as int? ?? 0,
       descricao: map['descricao'] as String? ?? '',
       justificativa: map['justificativa'] as String? ?? '',
-      agente: map['agente'] as String? ?? '',
+      motorista: map['motorista'] as String? ?? '',
       municipio: map['municipio'] as String? ?? '',
       dataHora: map['data_hora'] as String? ?? '',
-      origem: map['origem'] as String? ?? 'app_flutter',
+      origem: map['origem'] as String? ?? 'logisaude_driver',
       sincronizado: map['sincronizado'] as int? ?? 0,
       sincronizadoEm: map['sincronizado_em'] as String?,
       erroSincronizacao: map['erro_sincronizacao'] as String?,

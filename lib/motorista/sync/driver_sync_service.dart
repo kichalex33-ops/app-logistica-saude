@@ -78,7 +78,9 @@ class DriverSyncService {
           await database.carregarValorConfiguracao(chaveFalhas) ?? '0',
         ) ??
         0;
-    final ultimoSync = await database.carregarValorConfiguracao(chaveUltimoSync);
+    final ultimoSync = await database.carregarValorConfiguracao(
+      chaveUltimoSync,
+    );
 
     return DriverSyncStatus(
       online: online,
@@ -172,10 +174,7 @@ class DriverSyncService {
       chaveOnline,
       status.online ? 'true' : 'false',
     );
-    await database.salvarValorConfiguracao(
-      chaveEnviados,
-      '${status.enviados}',
-    );
+    await database.salvarValorConfiguracao(chaveEnviados, '${status.enviados}');
     await database.salvarValorConfiguracao(chaveFalhas, '${status.falhas}');
     if (ultimoSyncIso != null) {
       await database.salvarValorConfiguracao(chaveUltimoSync, ultimoSyncIso);

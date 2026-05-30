@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:controle_ace/auth/motorista_model.dart';
+import 'package:logisaude_driver/auth/motorista_model.dart';
 
 void main() {
   test('serializa motorista autenticado localmente', () {

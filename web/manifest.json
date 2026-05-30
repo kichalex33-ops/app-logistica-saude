@@ -1,6 +1,6 @@
 {
-    "name": "controle_ace",
-    "short_name": "controle_ace",
+    "name": "LogiSaude Driver",
+    "short_name": "LogiSaude",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

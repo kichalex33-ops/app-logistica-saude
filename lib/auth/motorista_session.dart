@@ -18,7 +18,7 @@ class MotoristaSession {
     );
     await databaseHelper.salvarConfiguracao(
       municipio: motorista.municipio,
-      agente: motorista.nome,
+      motorista: motorista.nome,
     );
   }
 
